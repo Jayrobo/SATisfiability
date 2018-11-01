@@ -59,15 +59,20 @@ int main()
 	cout << "This is the number of variable to solve: " << maxi << endl;
 	cout << "Number of clauses in the file is " << clauses << endl;
 
+	//output to see if clauses are stored properly
 	for (size_t i = 0; i < Clauses.size(); i++)
 	{
 		for (size_t j = 0; j < Clauses[i].size(); j++)
 		{
 			cout << Clauses[i][j] << " ";
 		}
-
 		cout << endl;
 	}
+
+	vector<int> Possible_Ans;
+	for (int i = 0; i < maxi; i++)
+		Possible_Ans.push_back(i + 1); //initialize guessed answer 
+									   //which starts at assuming all positive
 
 
 	//Testing 2D Vector
