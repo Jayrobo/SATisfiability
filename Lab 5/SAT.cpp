@@ -51,6 +51,18 @@ vector<vector<int>> Inputter(char* filename)
 	return Clauses;
 }
 
+vector<int> Update_Guess(vector<int> guessed_answer)
+{
+
+	return guessed_answer;
+}
+
+vector<int> Solution_Check(vector<int> guessed_answer)
+{
+
+	return guessed_answer;
+}
+
 int main()
 {
 	char* filename = "small_test.cnf";
@@ -73,6 +85,9 @@ int main()
 	for (int i = 0; i < maxi; i++)
 		Possible_Ans.push_back(i + 1); //initialize guessed answer 
 									   //which starts at assuming all positive
+
+	for (int i = 0; i < Possible_Ans.size(); i++)
+		cout << Possible_Ans[i] << endl;
 
 	/*
 	//serial soultion test:
