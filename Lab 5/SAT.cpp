@@ -8,23 +8,23 @@ using namespace std;
 
 //global variable 
 int maxi = 0; //for finding out number of variable needed to be solved
-int clauses = 0; //number of claues in the file
+int clauses = 0; //number of clauses in the file
 
 vector<vector<int>> Inputter(char* filename)
 {
 	ifstream input_file;
 	input_file.open(filename);
 	string digits = "0123456789-"; //use for finding valid input
-	vector<vector<int>> Clauses;
+	vector<vector<int>> Clauses; //matrix of clauses
 	vector<int> temp_int;
 
 	while (!input_file.eof())
 	{
 		string temp_storage;
-		
+
 
 		input_file >> temp_storage;
-		
+
 		if (temp_storage.find_first_of(digits) != string::npos) //the read in input should only contain number
 		{
 			if (stoi(temp_storage) == 0)
@@ -73,6 +73,33 @@ int main()
 	for (int i = 0; i < maxi; i++)
 		Possible_Ans.push_back(i + 1); //initialize guessed answer 
 									   //which starts at assuming all positive
+
+	/*
+	//serial soultion test:
+	bool clause_true = false; //keeps track if clause is true
+	int i = 0; //row
+	int j = 0; //col
+	int k;// possible ans index
+
+	while (i < Clauses.size()) {
+		while (!clause_true) {
+			for (k = 0; k < Possible_Ans.size(); k++) { // check if clause has item in Possible Ans
+				if (Clauses[i][j] == Possible_Ans[k]) {
+					clause_true = true; //check next element
+					i++; j = 0; // check next clause
+					cout << endl << "Clauses "<<i<<"_"<<j << " == " << Possible_Ans[k]<<endl;
+					break; //just need one true to validate clause
+				} //else keep checking other elements of solution
+			}
+			if (!clause_true && j < Clauses[i].size()) {
+				j++; //check next variable
+			}
+			if (!clause_true && j > Clauses[i].size()){
+				Possible_Ans[k-1] = 0 - (Possible_Ans[k-1]); //try again
+				 j= 0;}
+		}
+	}
+	*/
 
 
 	//Testing 2D Vector
