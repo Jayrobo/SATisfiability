@@ -31,7 +31,7 @@ vector<vector<int>> Inputter(char* filename)
 			{
 				Clauses.push_back(temp_int);
 				temp_int.clear(); //clear for a new clause
-				cout << endl;	//end of a line in the .cnf file
+				//cout << endl;	//end of a line in the .cnf file
 								//use to seperate clasues
 				clauses++;
 			}
@@ -51,7 +51,16 @@ vector<vector<int>> Inputter(char* filename)
 	return Clauses;
 }
 
-vector<int> Update_Guess(vector<int> guessed_answer)
+int pow(int iter)
+{
+	int sum = 1;
+	for (int i = 0; i < iter; i++)
+		sum = sum*2;
+
+	return sum;
+}
+
+vector<int> Update_Guess(vector<int> guessed_answer, char option)
 {
 	int sum = 0;
 	int power = 0;
@@ -60,7 +69,7 @@ vector<int> Update_Guess(vector<int> guessed_answer)
 	while(pos > 0) //stored the guessed answer into true and false scheme
 	{
 		if (guessed_answer[pos] < 0)
-			sum += pow(2,power);
+			sum += pow(power);
 
 		//cout << power << " " << sum << endl;
 		pos--;
@@ -70,24 +79,26 @@ vector<int> Update_Guess(vector<int> guessed_answer)
 	//----------------------------------------------------------------------------------//
 	//           Increment or Decrement Depending on Initial guess                      //
 	//----------------------------------------------------------------------------------//
-	if (guessed_answer[0] == 1)
+	if (option == 'I')
 		sum++; //backtrack solution is increment as an guess update
 	else
 		sum--; //when initial guess start out from 1
 
-	power--; //to compensate the last increment by the previous for loop
+	//power--; //to compensate the last increment by the previous for loop
 	//----------------------------------------------------------------------------------//
 	//					  Conversion back to boolean (binary)							//
 	//----------------------------------------------------------------------------------//
 	vector<bool> Back_in_binary;
 	while (power >= 0)
 	{
-		if (sum / pow(2,power) == 1)
-			Back_in_binary.push_back(true);
-		else
+		if (sum / pow(power) == 1)
+		{
 			Back_in_binary.push_back(false);
+			sum = sum - pow(power); //update sum value
+		}
+		else
+			Back_in_binary.push_back(true);
 
-		sum  = remainder(sum, pow(2,power));
 		power--;
 		//cout << power << " " << sum << endl;
 	}
@@ -97,13 +108,15 @@ vector<int> Update_Guess(vector<int> guessed_answer)
 	for (size_t i = 0; i < Back_in_binary.size(); i++)
 	{
 		if (Back_in_binary[i] == true)
-			guessed_answer[i] = -guessed_answer[i];
+			guessed_answer[i] = abs(guessed_answer[i]);
+		else
+			guessed_answer[i] = -abs(guessed_answer[i]);
 	}
 	//----------------------------------------------------------------------------------//
 	return guessed_answer;
 }
 
-vector<int> Solution_Check(vector<int> guessed_answer, vector<vector<int>> Clauses)
+vector<int> Solution_Check(vector<int> guessed_answer, vector<vector<int>> Clauses, char option)
 {
 	int k = 0; // guessed_answer index
 	bool clause_true = false; //keep track of true clauses
@@ -120,7 +133,7 @@ vector<int> Solution_Check(vector<int> guessed_answer, vector<vector<int>> Claus
 		}
 		
 		if (!clause_true) { //end of clause and clause still false
-			guessed_answer = Update_Guess(guessed_answer); //update guess
+			guessed_answer = Update_Guess(guessed_answer, option); //update guess
 			i = -1; //start from top clause again
 			continue;
 		}
@@ -137,28 +150,29 @@ int main()
 	cout << "Number of clauses in the file is " << clauses << endl;
 
 	//output to see if clauses are stored properly
-	for (size_t i = 0; i < Clauses.size(); i++)
-	{
-		for (size_t j = 0; j < Clauses[i].size(); j++)
+		/*for (size_t i = 0; i < Clauses.size(); i++)
 		{
-			cout << Clauses[i][j] << " ";
-		}
-		cout << endl;
-	}
+			for (size_t j = 0; j < Clauses[i].size(); j++)
+			{
+				cout << Clauses[i][j] << " ";
+			}
+			cout << endl;
+		}*/
 
 
 	//---------------------------------------------------------------------------------------//
 	//-------------------------Initiate guesses and release threads -------------------------//
 	//---------------------------------------------------------------------------------------//
 
-	/*vector<int> Possible_Ans;
+	vector<int> Possible_Ans;
 	for (int i = 0; i < maxi; i++)
 		Possible_Ans.push_back(i + 1); //initialize guessed answer
-									   //which starts at assuming all positive */
+									   //which starts at assuming all positive
 
 	for (int i = 0; i < Possible_Ans.size(); i++)
-		cout << Possible_Ans[i] << endl;
-
+		cout << Possible_Ans[i];
+	cout << endl;
+	/*	
 			final_Solution = Solution_Check(Positive_Ans, Clauses);
 		else
 			final_Solution = Solution_Check(Negative_Ans, Clauses);
@@ -166,12 +180,12 @@ int main()
 		if (!final_Solution.empty()) {
 			#pragma omp cancel for //signal cancellation
 		}
-	}
+	}*/
 
 	//---------------------------------------------------------------------------------------//
 	//----------------------------- Print out SAT Solution ----------------------------------//
 	//---------------------------------------------------------------------------------------//
-	cout << endl <<"Solution = (";
+	/*cout << endl <<"Solution = (";
 	for (int k = 0; k < maxi; k++)
 		cout << final_Solution[k] << " ";
 	cout << ")" << endl;
@@ -187,15 +201,21 @@ int main()
 	cout << "Rows of 2D Vector " << Clauses.size() << endl;
 	cout << "First row size " << Clauses[0].size() << endl;
 	*/
-
 	vector<int> debug;
-	debug = Update_Guess(Possible_Ans);
+	debug = Update_Guess(Possible_Ans, 'I');
 
 	for (int i = 0; i < Possible_Ans.size(); i++)
 		cout << debug[i];
-
 	cout << endl;
-	debug = Update_Guess(debug);
+	debug = Update_Guess(debug, 'I');
+	for (int i = 0; i < Possible_Ans.size(); i++)
+		cout << debug[i];
+	cout << endl;
+	debug = Update_Guess(debug, 'I');
+	for (int i = 0; i < Possible_Ans.size(); i++)
+		cout << debug[i];
+	cout << endl;
+	debug = Update_Guess(debug, 'I');
 	for (int i = 0; i < Possible_Ans.size(); i++)
 		cout << debug[i];
 	cout << endl;
