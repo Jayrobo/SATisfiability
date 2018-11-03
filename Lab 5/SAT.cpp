@@ -3,8 +3,6 @@
 #include <string>
 #include <ctype.h>
 #include <vector>
-#include <cmath>
-#include <omp.h>
 
 using namespace std;
 
@@ -158,19 +156,8 @@ int main()
 		Possible_Ans.push_back(i + 1); //initialize guessed answer
 									   //which starts at assuming all positive */
 
-	vector<int> Positive_Ans, Negative_Ans; //initialize guessed answer
-	for (int i = 0; i < maxi; i++) {
-		Positive_Ans.push_back(i + 1); //for thread 1 to test
-		Negative_Ans.push_back(-(i + 1)); // for thread 2 to test
-
-	}
-	vector<int> final_Solution; // store final result returned
-
-	omp_set_num_threads(2);
-	#pragma omp parallel for
-	for (int i = 0; i < 2; i++)
-	{
-		if (i == 1)
+	for (int i = 0; i < Possible_Ans.size(); i++)
+		cout << Possible_Ans[i] << endl;
 
 			final_Solution = Solution_Check(Positive_Ans, Clauses);
 		else
