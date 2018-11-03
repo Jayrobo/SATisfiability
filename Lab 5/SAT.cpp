@@ -3,6 +3,7 @@
 #include <string>
 #include <ctype.h>
 #include <vector>
+#include <cmath>
 #include <omp.h>
 
 using namespace std;
@@ -54,7 +55,53 @@ vector<vector<int>> Inputter(char* filename)
 
 vector<int> Update_Guess(vector<int> guessed_answer)
 {
+	int sum = 0;
+	int power = 0;
+	size_t pos = guessed_answer.size() - 1;
 
+	while(pos > 0) //stored the guessed answer into true and false scheme
+	{
+		if (guessed_answer[pos] < 0)
+			sum += pow(2,power);
+
+		//cout << power << " " << sum << endl;
+		pos--;
+		power++;
+	}
+
+	//----------------------------------------------------------------------------------//
+	//           Increment or Decrement Depending on Initial guess                      //
+	//----------------------------------------------------------------------------------//
+	if (guessed_answer[0] == 1)
+		sum++; //backtrack solution is increment as an guess update
+	else
+		sum--; //when initial guess start out from 1
+
+	power--; //to compensate the last increment by the previous for loop
+	//----------------------------------------------------------------------------------//
+	//					  Conversion back to boolean (binary)							//
+	//----------------------------------------------------------------------------------//
+	vector<bool> Back_in_binary;
+	while (power >= 0)
+	{
+		if (sum / pow(2,power) == 1)
+			Back_in_binary.push_back(true);
+		else
+			Back_in_binary.push_back(false);
+
+		sum  = remainder(sum, pow(2,power));
+		power--;
+		//cout << power << " " << sum << endl;
+	}
+	//----------------------------------------------------------------------------------//
+	//								Update guess										//
+	//----------------------------------------------------------------------------------//
+	for (size_t i = 0; i < Back_in_binary.size(); i++)
+	{
+		if (Back_in_binary[i] == true)
+			guessed_answer[i] = -guessed_answer[i];
+	}
+	//----------------------------------------------------------------------------------//
 	return guessed_answer;
 }
 
@@ -153,6 +200,19 @@ int main()
 	cout << "Rows of 2D Vector " << Clauses.size() << endl;
 	cout << "First row size " << Clauses[0].size() << endl;
 	*/
+
+	vector<int> debug;
+	debug = Update_Guess(Possible_Ans);
+
+	for (int i = 0; i < Possible_Ans.size(); i++)
+		cout << debug[i];
+
+	cout << endl;
+	debug = Update_Guess(debug);
+	for (int i = 0; i < Possible_Ans.size(); i++)
+		cout << debug[i];
+	cout << endl;
+
 
 	system("pause");
 	return 0;
