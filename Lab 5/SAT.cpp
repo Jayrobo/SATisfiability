@@ -3,6 +3,7 @@
 #include <string>
 #include <ctype.h>
 #include <vector>
+#include <omp.h>
 
 using namespace std;
 
@@ -57,9 +58,28 @@ vector<int> Update_Guess(vector<int> guessed_answer)
 	return guessed_answer;
 }
 
-vector<int> Solution_Check(vector<int> guessed_answer)
+vector<int> Solution_Check(vector<int> guessed_answer, vector<vector<int>> Clauses)
 {
-
+	int k = 0; // guessed_answer index
+	bool clause_true = false; //keep track of true clauses
+	
+	for (size_t i = 0; i < Clauses.size(); i++)
+	{
+		for (size_t j = 0; j < Clauses[i].size(); j++)
+		{
+			k = abs(Clauses[i][j]);
+			if (Clauses[i][j] == guessed_answer[k-1]) {
+				clause_true = true;
+				break; //check next clause
+			}
+		}
+		
+		if (!clause_true) { //end of clause and clause still false
+			guessed_answer = Update_Guess(guessed_answer); //update guess
+			i = -1; //start from top clause again
+			continue;
+		}
+	}
 	return guessed_answer;
 }
 
@@ -81,41 +101,46 @@ int main()
 		cout << endl;
 	}
 
-	vector<int> Possible_Ans;
+
+	//---------------------------------------------------------------------------------------//
+	//-------------------------Initiate guesses and release threads -------------------------//
+	//---------------------------------------------------------------------------------------//
+
+	/*vector<int> Possible_Ans;
 	for (int i = 0; i < maxi; i++)
-		Possible_Ans.push_back(i + 1); //initialize guessed answer 
-									   //which starts at assuming all positive
+		Possible_Ans.push_back(i + 1); //initialize guessed answer
+									   //which starts at assuming all positive */
 
-	for (int i = 0; i < Possible_Ans.size(); i++)
-		cout << Possible_Ans[i] << endl;
+	vector<int> Positive_Ans, Negative_Ans; //initialize guessed answer
+	for (int i = 0; i < maxi; i++) {
+		Positive_Ans.push_back(i + 1); //for thread 1 to test
+		Negative_Ans.push_back(-(i + 1)); // for thread 2 to test
 
-	/*
-	//serial soultion test:
-	bool clause_true = false; //keeps track if clause is true
-	int i = 0; //row
-	int j = 0; //col
-	int k;// possible ans index
+	}
+	vector<int> final_Solution; // store final result returned
 
-	while (i < Clauses.size()) {
-		while (!clause_true) {
-			for (k = 0; k < Possible_Ans.size(); k++) { // check if clause has item in Possible Ans
-				if (Clauses[i][j] == Possible_Ans[k]) {
-					clause_true = true; //check next element
-					i++; j = 0; // check next clause
-					cout << endl << "Clauses "<<i<<"_"<<j << " == " << Possible_Ans[k]<<endl;
-					break; //just need one true to validate clause
-				} //else keep checking other elements of solution
-			}
-			if (!clause_true && j < Clauses[i].size()) {
-				j++; //check next variable
-			}
-			if (!clause_true && j > Clauses[i].size()){
-				Possible_Ans[k-1] = 0 - (Possible_Ans[k-1]); //try again
-				 j= 0;}
+	omp_set_num_threads(2);
+	#pragma omp parallel for
+	for (int i = 0; i < 2; i++)
+	{
+		if (i == 1)
+
+			final_Solution = Solution_Check(Positive_Ans, Clauses);
+		else
+			final_Solution = Solution_Check(Negative_Ans, Clauses);
+
+		if (!final_Solution.empty()) {
+			#pragma omp cancel for //signal cancellation
 		}
 	}
-	*/
 
+	//---------------------------------------------------------------------------------------//
+	//----------------------------- Print out SAT Solution ----------------------------------//
+	//---------------------------------------------------------------------------------------//
+	cout << endl <<"Solution = (";
+	for (int k = 0; k < maxi; k++)
+		cout << final_Solution[k] << " ";
+	cout << ")" << endl;
 
 	//Testing 2D Vector
 	/*vector<vector<int> > Clauses;
