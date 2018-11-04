@@ -3,6 +3,9 @@
 #include <string>
 #include <ctype.h>
 #include <vector>
+#include <cmath>
+#include <omp.h>
+
 
 using namespace std;
 
@@ -172,23 +175,23 @@ int main()
 	for (int i = 0; i < Possible_Ans.size(); i++)
 		cout << Possible_Ans[i];
 	cout << endl;
-	/*	
-			final_Solution = Solution_Check(Positive_Ans, Clauses);
+
+	vector<int> Positive_Ans, Negative_Ans, final_Solution; // positive and negative initial solutions
+	for (int i = 0; i < maxi; i++) {
+		Positive_Ans.push_back(i + 1);
+		Negative_Ans.push_back(-(i + 1));
+	}
+	
+	omp_set_num_threads(2);
+	#pragma omp parallel for
+	for (int i = 0; i<2; i++){
+		if (i=0)
+		final_Solution = Solution_Check(Positive_Ans, Clauses, 'D');
 		else
-			final_Solution = Solution_Check(Negative_Ans, Clauses);
+			final_Solution = Solution_Check(Negative_Ans, Clauses, 'I');
 
-		if (!final_Solution.empty()) {
-			#pragma omp cancel for //signal cancellation
+		#pragma omp cancel for //signal cancellation if one is done...
 		}
-	}*/
-
-	//---------------------------------------------------------------------------------------//
-	//----------------------------- Print out SAT Solution ----------------------------------//
-	//---------------------------------------------------------------------------------------//
-	/*cout << endl <<"Solution = (";
-	for (int k = 0; k < maxi; k++)
-		cout << final_Solution[k] << " ";
-	cout << ")" << endl;
 
 	//Testing 2D Vector
 	/*vector<vector<int> > Clauses;
@@ -219,6 +222,14 @@ int main()
 	for (int i = 0; i < Possible_Ans.size(); i++)
 		cout << debug[i];
 	cout << endl;
+
+	//---------------------------------------------------------------------------------------//
+	//----------------------------- Print out SAT Solution ----------------------------------//
+	//---------------------------------------------------------------------------------------//
+	cout << endl << "Solution = (";
+	for (int k = 0; k < maxi; k++)
+		cout << final_Solution[k] << " ";
+	cout << ")" << endl;
 
 
 	system("pause");
