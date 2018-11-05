@@ -190,8 +190,10 @@ int main()
 		else
 			final_Solution = Solution_Check(Negative_Ans, Clauses, 'I');
 
-		#pragma omp cancel for //signal cancellation if one is done...
+		if (!final_Solution.empty()) {
+			#pragma omp cancel for //signal cancellation
 		}
+	}
 
 	//Testing 2D Vector
 	/*vector<vector<int> > Clauses;
