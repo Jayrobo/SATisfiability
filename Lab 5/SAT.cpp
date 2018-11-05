@@ -3,7 +3,6 @@
 #include <string>
 #include <ctype.h>
 #include <vector>
-#include <cmath>
 #include <omp.h>
 
 
@@ -126,6 +125,7 @@ vector<int> Solution_Check(vector<int> guessed_answer, vector<vector<int>> Claus
 	
 	for (size_t i = 0; i < Clauses.size(); i++)
 	{
+		clause_true = false; //reset at every clause
 		for (size_t j = 0; j < Clauses[i].size(); j++)
 		{
 			k = abs(Clauses[i][j]);
@@ -135,7 +135,13 @@ vector<int> Solution_Check(vector<int> guessed_answer, vector<vector<int>> Claus
 			}
 		}
 		
-		if (!clause_true) { //end of clause and clause still false
+		if (i == (Clauses.size() - 1) && !clause_true)
+		{
+			guessed_answer[0] = maxi + 1; //to help identify if the solution does not exist
+										  //since maxi is already the maximum variable....in any case there shouldn't be a maxi+1 unless solution not found
+		}
+		else if (!clause_true) 
+		{ //end of clause and clause still false
 			guessed_answer = Update_Guess(guessed_answer, option); //update guess
 			i = -1; //start from top clause again
 			continue;
@@ -151,50 +157,47 @@ int main()
 
 	cout << "This is the number of variable to solve: " << maxi << endl;
 	cout << "Number of clauses in the file is " << clauses << endl;
-
+	cout << "Clauses:" << endl;
 	//output to see if clauses are stored properly
-		/*for (size_t i = 0; i < Clauses.size(); i++)
+		for (size_t i = 0; i < Clauses.size(); i++)
 		{
 			for (size_t j = 0; j < Clauses[i].size(); j++)
 			{
 				cout << Clauses[i][j] << " ";
 			}
 			cout << endl;
-		}*/
-
-
+		}
 	//---------------------------------------------------------------------------------------//
 	//-------------------------Initiate guesses and release threads -------------------------//
 	//---------------------------------------------------------------------------------------//
 
-	vector<int> Possible_Ans;
-	for (int i = 0; i < maxi; i++)
-		Possible_Ans.push_back(i + 1); //initialize guessed answer
+	//vector<int> Possible_Ans;
+	//for (int i = 0; i < maxi; i++)
+	//	Possible_Ans.push_back(i + 1); //initialize guessed answer
 									   //which starts at assuming all positive
 
-	for (int i = 0; i < Possible_Ans.size(); i++)
-		cout << Possible_Ans[i];
-	cout << endl;
+	//for (int i = 0; i < Possible_Ans.size(); i++)
+	//	cout << Possible_Ans[i];
+	//cout << endl;
 
 	vector<int> Positive_Ans, Negative_Ans, final_Solution; // positive and negative initial solutions
 	for (int i = 0; i < maxi; i++) {
 		Positive_Ans.push_back(i + 1);
 		Negative_Ans.push_back(-(i + 1));
 	}
-	
+
 	omp_set_num_threads(2);
 	#pragma omp parallel for
-	for (int i = 0; i<2; i++){
-		if (i=0)
-		final_Solution = Solution_Check(Positive_Ans, Clauses, 'D');
+	for (int i = 0; i<2; i++)
+	{
+		if (i == 0)
+			final_Solution = Solution_Check(Positive_Ans, Clauses, 'I'); //All positive means its all set to 0s
 		else
-			final_Solution = Solution_Check(Negative_Ans, Clauses, 'I');
+			final_Solution = Solution_Check(Negative_Ans, Clauses, 'D'); //All negative means its all set to 1s
 
-		if (!final_Solution.empty()) {
-			#pragma omp cancel for //signal cancellation
-		}
+		#pragma omp cancel for //signal cancellation if one is done...
 	}
-
+	
 	//Testing 2D Vector
 	/*vector<vector<int> > Clauses;
 	vector<int> Indi_Clauses;
@@ -206,33 +209,39 @@ int main()
 	cout << "Rows of 2D Vector " << Clauses.size() << endl;
 	cout << "First row size " << Clauses[0].size() << endl;
 	*/
-	vector<int> debug;
-	debug = Update_Guess(Possible_Ans, 'I');
+	
+	//---------------------------------------------------------------------------------------//
+	//-------------------------Debug on the Function Update_Guess ---------------------------//
+	//---------------------------------------------------------------------------------------//
+	/*vector<int> debug;
+	debug = Update_Guess(Positive_Ans, 'I');
 
-	for (int i = 0; i < Possible_Ans.size(); i++)
+	for (int i = 0; i < Positive_Ans.size(); i++)
 		cout << debug[i];
 	cout << endl;
 	debug = Update_Guess(debug, 'I');
-	for (int i = 0; i < Possible_Ans.size(); i++)
+	for (int i = 0; i < Positive_Ans.size(); i++)
 		cout << debug[i];
 	cout << endl;
 	debug = Update_Guess(debug, 'I');
-	for (int i = 0; i < Possible_Ans.size(); i++)
+	for (int i = 0; i < Positive_Ans.size(); i++)
 		cout << debug[i];
 	cout << endl;
 	debug = Update_Guess(debug, 'I');
-	for (int i = 0; i < Possible_Ans.size(); i++)
+	for (int i = 0; i < Positive_Ans.size(); i++)
 		cout << debug[i];
-	cout << endl;
+	cout << endl;*/
 
 	//---------------------------------------------------------------------------------------//
 	//----------------------------- Print out SAT Solution ----------------------------------//
 	//---------------------------------------------------------------------------------------//
-	cout << endl << "Solution = (";
-	for (int k = 0; k < maxi; k++)
-		cout << final_Solution[k] << " ";
-	cout << ")" << endl;
-
+	if (final_Solution[0] != (maxi + 1)) //output only solution exist
+	{
+		cout << endl << "Solution = (";
+		for (int k = 0; k < maxi; k++)
+			cout << final_Solution[k] << " ";
+		cout << ")" << endl;
+	}
 
 	system("pause");
 	return 0;
