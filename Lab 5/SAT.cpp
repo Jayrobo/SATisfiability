@@ -53,7 +53,7 @@ vector<vector<int>> Inputter(char* filename)
 	return Clauses;
 }
 
-int pow(int iter)
+long unsigned int pow(int iter)
 {
 	int sum = 1;
 	for (int i = 0; i < iter; i++)
@@ -64,7 +64,7 @@ int pow(int iter)
 
 vector<int> Update_Guess(vector<int> guessed_answer, char option)
 {
-	int sum = 0;
+	long unsigned int sum = 0;
 	int power = 0;
 	size_t pos = guessed_answer.size() - 1;
 
@@ -84,8 +84,10 @@ vector<int> Update_Guess(vector<int> guessed_answer, char option)
 	if (option == 'I')
 		sum++; //backtrack solution is increment as an guess update
 	else
+	{
+		sum += pow(power);
 		sum--; //when initial guess start out from 1
-
+	}
 	//power--; //to compensate the last increment by the previous for loop
 	//----------------------------------------------------------------------------------//
 	//					  Conversion back to boolean (binary)							//
@@ -152,7 +154,7 @@ vector<int> Solution_Check(vector<int> guessed_answer, vector<vector<int>> Claus
 
 int main()
 {
-	char* filename = "small_test.cnf";
+	char* filename = "quin.cnf";
 	vector<vector<int>> Clauses = Inputter(filename);
 
 	cout << "This is the number of variable to solve: " << maxi << endl;
@@ -191,12 +193,23 @@ int main()
 	for (int i = 0; i<2; i++)
 	{
 		if (i == 0)
+		{
+			#pragma omp critical
+			{
 			final_Solution = Solution_Check(Positive_Ans, Clauses, 'I'); //All positive means its all set to 0s
+			}
+			#pragma omp cancel for //signal cancellation if one is done...
+		}
 		else
-			final_Solution = Solution_Check(Negative_Ans, Clauses, 'D'); //All negative means its all set to 1s
-
-		#pragma omp cancel for //signal cancellation if one is done...
+		{
+			#pragma omp critical
+			{
+				final_Solution = Solution_Check(Negative_Ans, Clauses, 'D'); //All negative means its all set to 1s
+			}
+			#pragma omp cancel for //signal cancellation if one is done...
+		}
 	}
+	#pragma omp cancellation point for
 	
 	//Testing 2D Vector
 	/*vector<vector<int> > Clauses;
@@ -242,7 +255,16 @@ int main()
 			cout << final_Solution[k] << " ";
 		cout << ")" << endl;
 	}
-	z
+	/*if (final_Solution_2[0] != (maxi + 1)) //output only solution exist
+	{
+		cout << endl << "Solution = (";
+		for (int k = 0; k < maxi; k++)
+			cout << final_Solution_2[k] << " ";
+		cout << ")" << endl;
+	}*/
+	else 
+		cout << endl << "Case unsatisfiable.";
+	
 	system("pause");
 	return 0;
 }
