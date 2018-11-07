@@ -152,7 +152,7 @@ vector<int> Solution_Check(vector<int> guessed_answer, vector<vector<int>> Claus
 
 int main()
 {
-	char* filename = "quin.cnf";
+	char* filename = "small_test.cnf";
 	vector<vector<int>> Clauses = Inputter(filename);
 
 	cout << "This is the number of variable to solve: " << maxi << endl;
@@ -242,9 +242,7 @@ int main()
 			cout << final_Solution[k] << " ";
 		cout << ")" << endl;
 	}
-	else 
-		cout << endl << "Case unsatisfiable.";
-	
+	z
 	system("pause");
 	return 0;
 }
