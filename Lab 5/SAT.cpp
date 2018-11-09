@@ -12,10 +12,20 @@ using namespace std;
 int maxi = 0; //for finding out number of variable needed to be solved
 int clauses = 0; //number of clauses in the file
 
-vector<vector<int>> Inputter(char* filename)
+vector<vector<int>> Inputter()
 {
 	ifstream input_file;
-	input_file.open(filename);
+	string filename;
+	
+	do 
+	{
+	   cout << "Please enter the file name with .cnf extension: ";
+	   cin >> filename;
+	   input_file.open(filename);
+	   if (input_file.fail())
+	   	cout << "Error, make sure you type the correct file name or file is in the folder, try again\n";
+	}while(input_file.fail());
+	
 	string digits = "0123456789-"; //use for finding valid input
 	vector<vector<int>> Clauses; //matrix of clauses
 	vector<int> temp_int;
@@ -53,9 +63,9 @@ vector<vector<int>> Inputter(char* filename)
 	return Clauses;
 }
 
-long unsigned int pow(int iter)
+double pow(int iter)
 {
-	int sum = 1;
+	double sum = 1;
 	for (int i = 0; i < iter; i++)
 		sum = sum*2;
 
@@ -64,7 +74,7 @@ long unsigned int pow(int iter)
 
 vector<int> Update_Guess(vector<int> guessed_answer, char option)
 {
-	long unsigned int sum = 0;
+	double sum = 0;
 	int power = 0;
 	size_t pos = guessed_answer.size() - 1;
 
@@ -95,7 +105,7 @@ vector<int> Update_Guess(vector<int> guessed_answer, char option)
 	vector<bool> Back_in_binary;
 	while (power >= 0)
 	{
-		if (sum / pow(power) == 1)
+		if (sum / pow(power) >= 1)
 		{
 			Back_in_binary.push_back(false);
 			sum = sum - pow(power); //update sum value
@@ -154,8 +164,7 @@ vector<int> Solution_Check(vector<int> guessed_answer, vector<vector<int>> Claus
 
 int main()
 {
-	char* filename = "quin.cnf";
-	vector<vector<int>> Clauses = Inputter(filename);
+	vector<vector<int>> Clauses = Inputter();
 
 	cout << "This is the number of variable to solve: " << maxi << endl;
 	cout << "Number of clauses in the file is " << clauses << endl;
@@ -182,7 +191,7 @@ int main()
 	//	cout << Possible_Ans[i];
 	//cout << endl;
 
-	vector<int> Positive_Ans, Negative_Ans, final_Solution; // positive and negative initial solutions
+	vector<int> Positive_Ans, Negative_Ans, final_Solution_1, final_Solution_2; // positive and negative initial solutions
 	for (int i = 0; i < maxi; i++) {
 		Positive_Ans.push_back(i + 1);
 		Negative_Ans.push_back(-(i + 1));
@@ -194,22 +203,22 @@ int main()
 	{
 		if (i == 0)
 		{
-			#pragma omp critical
+			//#pragma omp critical
 			{
-			final_Solution = Solution_Check(Positive_Ans, Clauses, 'I'); //All positive means its all set to 0s
+			final_Solution_1 = Solution_Check(Positive_Ans, Clauses, 'I'); //All positive means its all set to 0s
 			}
-			#pragma omp cancel for //signal cancellation if one is done...
+			//#pragma omp cancel for //signal cancellation if one is done...
 		}
 		else
 		{
-			#pragma omp critical
+			//#pragma omp critical
 			{
-				final_Solution = Solution_Check(Negative_Ans, Clauses, 'D'); //All negative means its all set to 1s
+				final_Solution_2 = Solution_Check(Negative_Ans, Clauses, 'D'); //All negative means its all set to 1s
 			}
-			#pragma omp cancel for //signal cancellation if one is done...
+			//#pragma omp cancel for //signal cancellation if one is done...
 		}
 	}
-	#pragma omp cancellation point for
+	//#pragma omp cancellation point for
 	
 	//Testing 2D Vector
 	/*vector<vector<int> > Clauses;
@@ -248,22 +257,22 @@ int main()
 	//---------------------------------------------------------------------------------------//
 	//----------------------------- Print out SAT Solution ----------------------------------//
 	//---------------------------------------------------------------------------------------//
-	if (final_Solution[0] != (maxi + 1)) //output only solution exist
+	if (final_Solution_1[0] != (maxi + 1)) //output only solution exist
 	{
 		cout << endl << "Solution = (";
 		for (int k = 0; k < maxi; k++)
-			cout << final_Solution[k] << " ";
+			cout << final_Solution_1[k] << " ";
 		cout << ")" << endl;
 	}
-	/*if (final_Solution_2[0] != (maxi + 1)) //output only solution exist
+	else if (final_Solution_2[0] != (maxi + 1)) //output only solution exist
 	{
 		cout << endl << "Solution = (";
 		for (int k = 0; k < maxi; k++)
 			cout << final_Solution_2[k] << " ";
 		cout << ")" << endl;
-	}*/
+	}
 	else 
-		cout << endl << "Case unsatisfiable.";
+		cout << endl << "Case unsatisfiable.\n";
 	
 	system("pause");
 	return 0;
